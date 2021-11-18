@@ -13,9 +13,9 @@ public class Campo {
 	private final int linha;
 	private final int coluna;
 	
-	private boolean aberto = false;
-	private boolean minado = false;
-	private boolean marcado = false;
+//	private boolean aberto = false;
+//	private boolean minado = false;
+//	private boolean marcado = false;
 	
 	private List<Campo> vizinhos = new ArrayList<>();
 	
