@@ -3,8 +3,10 @@ package br.com.cod3r.cm.modelo;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.cod3r.cm.excecao.ExplosaoException;
+
 /*
- * Os campos dão referência a cada "quadradinho" dentro do tabuleiro.
+ * Os campos dÃ£o referÃªncia a cada "quadradinho" dentro do tabuleiro.
  * 
  * */
 
@@ -14,7 +16,7 @@ public class Campo {
 	private final int coluna;
 	
 	private boolean aberto = false;
-//	private boolean minado = false;
+	private boolean minado = false;
 	private boolean marcado = false;
 	
 	private List<Campo> vizinhos = new ArrayList<>();
@@ -28,8 +30,8 @@ public class Campo {
 	/*
 	 * ***************(linha, conluna)**********************
 	 * 
-	 * Calulos para saber quais campos sãso vizinhos do campo clicado, 
-	 * sendo vizinho será adicionado ao ArrayList vizinhos.
+	 * Calulos para saber quais campos sï¿½so vizinhos do campo clicado, 
+	 * sendo vizinho serÃ¡ adicionado ao ArrayList vizinhos.
 	 * 
 	 * Lados, encima e embaixo: (linha - linhha) + (coluna - coluna) = 1
 	 * 
@@ -38,8 +40,8 @@ public class Campo {
 	 */
 	public boolean adicionarVizinho(Campo vizinho){
 		/*
-		 *  Verifica se a linha e a coluna recebidas na variável 
-		 *  'vizinho' é diferente da linha e coluna selecionada, 
+		 *  Verifica se a linha e a coluna recebidas na variï¿½vel 
+		 *  'vizinho' Ã© diferente da linha e coluna selecionada, 
 		 *  sendo fiferente significa que o vizinho pode estar em uma diaginal. 
 		*/
 		boolean linhaDiferente = linha != vizinho.linha;
@@ -50,7 +52,7 @@ public class Campo {
 		boolean diagonal = linhaDiferente && colunaDiferente;
 		
 		/*
-		 * 'deltaGeral' deverá dar 1 ou 2 de resultado para que seja
+		 * 'deltaGeral' deverÃ¡ dar 1 ou 2 de resultado para que seja
 		 * 	um vizinho do campo selecionado.
 		 * */
 		int deltaLinha = Math.abs(linha - vizinho.linha);
@@ -58,11 +60,11 @@ public class Campo {
 		int deltaGeral = deltaLinha + deltaColuna;
 		
 		/*
-		 * 1. Verifica se o 'deltaGeral' é igual a 1 e se 'diagonal' retorna false, 
-		 * caso retorne false significa que o campo não é uma diagonal. 
+		 * 1. Verifica se o 'deltaGeral' Ã© igual a 1 e se 'diagonal' retorna false, 
+		 * caso retorne false significa que o campo nÃ£o Ã© uma diagonal. 
 		 * 
-		 * 2. Verifica se o 'deltaGeral' é igual a 2 e se 'diagonal' retorna true, 
-		 * caso retorne true significa que o campo é uma diagonal.
+		 * 2. Verifica se o 'deltaGeral' Ã© igual a 2 e se 'diagonal' retorna true, 
+		 * caso retorne true significa que o campo Ã© uma diagonal.
 		 * */
 		
 		if((deltaGeral == 1 && !diagonal) || (deltaGeral == 2 && diagonal)){
@@ -74,7 +76,7 @@ public class Campo {
 	}
 	
 	/*
-	 * Irá marcar um campo caso a casa não esteja aberta;
+	 * IrÃ¡ marcar um campo caso a casa nÃ£o esteja aberta;
 	 * 
 	 * */
 	void alterarMarcacao() {
@@ -84,7 +86,97 @@ public class Campo {
 	}
 	
 	boolean abrir() {
+		if(!aberto && !marcado){
+			aberto = true;
+			if(minado){
+				throw new ExplosaoException();
+			}
+			
+			if(vizinhancaSegura()){
+				vizinhos.forEach(v -> v.abrir());
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	boolean vizinhancaSegura(){
 		
-		return true;
+		return vizinhos.stream().noneMatch(v -> v.minado);
+	}
+	
+	void minar(){
+		minado = true;
+	}
+	
+	public boolean isMinado(){
+		return minado;
+	}
+	
+	public boolean isMarcado(){
+		return marcado;
+	}
+	
+	
+	
+	void setAberto(boolean aberto) {
+		this.aberto = aberto;
+	}
+
+
+	public boolean isAberto(){
+		return aberto;
+	}
+	
+	public boolean isFechado(){
+		return !isAberto();
+	}
+
+	public int getLinha() {
+		return linha;
+	}
+
+
+	public int getColuna() {
+		return coluna;
+	}
+	
+	boolean objetivoAlcancado(){
+		boolean desvendado = !minado && aberto;
+		boolean protegido = minado && marcado;
+		
+		return desvendado || protegido;
+	}
+	
+	long minasNaVizinhanca(){
+		return vizinhos.stream().filter(v -> v.minado).count();
+	}
+	
+	void reiniciar(){
+		aberto = false;
+		minado = false;
+		marcado = false;
+	}
+	
+	@Override
+	public String toString() {
+		
+		if(marcado){
+			return "x";
+		}
+		
+		if (aberto && minado){
+			return "*";
+		}
+		
+		if(aberto && minasNaVizinhanca() > 0){
+			return Long.toString(minasNaVizinhanca());
+		}
+		
+		if(aberto){
+			return " "; 
+		}
+		
+		return "?";
 	}
 }
